@@ -12,6 +12,6 @@ export async function GET(request: NextRequest) {
     return categoryOk && locationOk;
   });
 
-  const sorted = filtered.sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
+  const sorted = [...filtered].sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
   return NextResponse.json(sorted);
 }

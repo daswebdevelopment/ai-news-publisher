@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Filters({
   category,
   location
@@ -27,7 +29,10 @@ export function Filters({
         </select>
       </label>
 
-      <button type="submit">Apply</button>
+      <button type="submit">Apply filters</button>
+      <Link className="ghost-btn" href="/">
+        Reset
+      </Link>
     </form>
   );
 }

@@ -4,13 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-news-publisher"
-version = "0.1.0"
-description = "Minimal pipeline to normalize AI news items and generate a markdown digest"
+version = "0.2.0"
+description = "Automated AI news publisher with event ingestion, localization, and SEO-ready APIs"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "ai-news-publisher contributors" }]
-dependencies = []
+dependencies = [
+  "fastapi>=0.111.0",
+  "uvicorn>=0.30.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
 
 [project.scripts]
 ai-news-publisher = "ai_news_publisher.cli:main"

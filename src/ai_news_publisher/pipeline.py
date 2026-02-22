@@ -9,8 +9,9 @@ from .models import NewsItem
 def normalize_items(raw_items: list[dict]) -> list[NewsItem]:
     """Convert raw dictionaries into validated NewsItem objects.
 
-    Duplicate URLs are collapsed by keeping the most recently published story,
-    and items are sorted by publication time descending.
+    Duplicate URLs are collapsed by keeping the most recently published story.
+    If timestamps are identical, the later input item wins. Items are sorted
+    by publication time descending.
     """
 
     latest_by_url: dict[str, NewsItem] = {}
@@ -18,7 +19,7 @@ def normalize_items(raw_items: list[dict]) -> list[NewsItem]:
     for raw in raw_items:
         item = NewsItem.from_dict(raw)
         existing = latest_by_url.get(item.url)
-        if existing is None or item.published_at > existing.published_at:
+        if existing is None or item.published_at >= existing.published_at:
             latest_by_url[item.url] = item
 
     normalized = list(latest_by_url.values())

@@ -27,6 +27,7 @@ class NewsItem:
         _validate_http_url(url)
 
         published_at = _parse_published_at(data.get("published_at"))
+        category = _clean_optional_text(data.get("category"), default="general").lower()
 
         return cls(
             title=title,
@@ -34,7 +35,7 @@ class NewsItem:
             url=url,
             summary=summary,
             published_at=published_at,
-            category=str(data.get("category", "general")).strip().lower() or "general",
+            category=category,
         )
 
 
@@ -42,12 +43,24 @@ def _clean_required_text(data: dict[str, Any], field: str) -> str:
     value = data.get(field)
     if value is None:
         raise ValueError(f"Missing required field: {field}")
+    if not isinstance(value, str):
+        raise ValueError(f"Field '{field}' must be a string")
 
-    text = str(value).strip()
+    text = value.strip()
     if not text:
         raise ValueError(f"Field '{field}' must be a non-empty string")
 
     return text
+
+
+def _clean_optional_text(value: Any, default: str) -> str:
+    if value is None:
+        return default
+    if not isinstance(value, str):
+        raise ValueError("Field 'category' must be a string")
+
+    text = value.strip()
+    return text or default
 
 
 def _validate_http_url(url: str) -> None:

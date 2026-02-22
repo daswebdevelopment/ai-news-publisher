@@ -1,73 +1,61 @@
 # AI News Publisher
 
-`ai-news-publisher` provides a small, runnable pipeline to normalize AI news items and generate a publish-ready markdown digest.
+Automated event-based news publishing system with Python/FastAPI backend and minimal Next.js frontend.
 
-## What is implemented
+## What this project does
+- Ingests RSS feeds asynchronously.
+- Clusters similar stories into normalized **events** using embeddings.
+- Stores only event metadata, source links, embeddings, and AI-generated summaries.
+- Exposes read-only publishing APIs with filters and localization impact.
+- Generates automated daily email digests with topic grouping and configurable length.
+- Generates SEO metadata and structured JSON-LD for event pages.
+- Adds lightweight monitoring for AI usage, cost spikes, and failure counters.
 
-- Input validation for required text fields, URL format, and timestamp format.
-- Timestamp normalization to UTC (naive timestamps are treated as UTC).
-- Story normalization into a typed model.
-- URL de-duplication (most recently published duplicate wins).
-- Reverse-chronological sorting.
-- Markdown digest generation grouped by category.
-- CLI command to transform JSON input into a digest file with clear validation errors.
+## Architecture
+- Backend: FastAPI (`src/ai_news_publisher/api`)
+- Event pipeline: `services/ingestion.py`, `services/summarization.py`, `services/localization.py`
+- Database schema: `src/ai_news_publisher/db/schema.sql` (PostgreSQL + pgvector)
+- Frontend: Next.js (`frontend/`)
 
-## Quick Start
-
-### 1) Create and activate a virtual environment
-
+## Quick start
+### Python backend
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-### 2) Install the package in editable mode
-
-```bash
 pip install -e .
+uvicorn ai_news_publisher.main:app --reload
 ```
 
-### 3) Create an input file
-
-Example `sample_news.json`:
-
-```json
-[
-  {
-    "title": "New model release",
-    "source": "Example AI Blog",
-    "url": "https://example.com/model-release",
-    "summary": "A new family of models was announced.",
-    "published_at": "2026-01-20T10:30:00+00:00",
-    "category": "product"
-  },
-  {
-    "title": "Benchmark update",
-    "source": "Research Weekly",
-    "url": "https://example.com/benchmark-update",
-    "summary": "Researchers published a new evaluation result.",
-    "published_at": "2026-01-19T14:00:00+00:00",
-    "category": "research"
-  }
-]
-```
-
-### 4) Generate a digest
-
-```bash
-ai-news-publisher sample_news.json --output digest.md
-```
-
-The command prints a summary and writes the formatted digest to `digest.md`.
-
-## Development
-
-Run tests:
-
+### Run tests
 ```bash
 pytest
 ```
 
-## License
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-This project is licensed under the terms in [LICENSE](LICENSE).
+## Environment variables
+- `DATABASE_URL`: PostgreSQL DSN
+- `OPENAI_API_KEY`: optional if replacing template summarizer with OpenAI client
+- `PUBLISHER_BASE_URL`: canonical URL host for SEO tags
+- `EMBEDDING_DIMENSIONS`: embedding vector size (default 16)
+- `DIGEST_MAX_EVENTS`: max events to include in a daily digest
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`: SMTP provider settings
+- `DIGEST_SENDER_EMAIL`: sender identity for digest emails
+- `AI_COST_SPIKE_MULTIPLIER`: alert threshold multiplier vs rolling average cost
+- `AI_COST_WINDOW`: rolling window size for cost-spike checks
+
+## API overview
+- `GET /health`
+- `GET /api/events?category=&country=&city=`
+- `GET /api/events/{slug}`
+- `GET /api/events/{slug}/local-impact?country=&state=&city=`
+- `POST /api/digest/send?recipient=&max_events=&category=&country=&city=`
+- `GET /health/detailed`
+- `GET /api/monitoring`
+
+All payloads include `ai_generated_notice` and do not expose raw scraped text.

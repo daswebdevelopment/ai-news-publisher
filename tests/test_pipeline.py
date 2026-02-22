@@ -39,6 +39,31 @@ def test_normalize_items_deduplicates_by_keeping_newest_and_sorts_descending() -
     assert [item.title for item in items] == ["Updated duplicate should be kept", "Older story"]
 
 
+def test_normalize_items_keeps_later_item_when_duplicate_timestamps_tie() -> None:
+    items = normalize_items(
+        [
+            {
+                "title": "Initial",
+                "source": "Feed",
+                "url": "https://example.com/tie",
+                "summary": "Old summary",
+                "published_at": "2026-01-02T09:00:00+00:00",
+            },
+            {
+                "title": "Corrected",
+                "source": "Feed",
+                "url": "https://example.com/tie",
+                "summary": "Corrected summary",
+                "published_at": "2026-01-02T09:00:00+00:00",
+            },
+        ]
+    )
+
+    assert len(items) == 1
+    assert items[0].title == "Corrected"
+    assert items[0].summary == "Corrected summary"
+
+
 def test_normalize_items_requires_fields() -> None:
     with pytest.raises(ValueError, match="Missing required field: title"):
         normalize_items([
@@ -60,6 +85,33 @@ def test_normalize_items_rejects_whitespace_only_required_text() -> None:
                 "url": "https://example.com/blank-title",
                 "summary": "Summary",
                 "published_at": "2026-01-01T00:00:00Z",
+            }
+        ])
+
+
+def test_normalize_items_rejects_non_string_required_fields() -> None:
+    with pytest.raises(ValueError, match="Field 'title' must be a string"):
+        normalize_items([
+            {
+                "title": 123,
+                "source": "Nowhere",
+                "url": "https://example.com/non-string-title",
+                "summary": "Summary",
+                "published_at": "2026-01-01T00:00:00Z",
+            }
+        ])
+
+
+def test_normalize_items_rejects_non_string_category() -> None:
+    with pytest.raises(ValueError, match="Field 'category' must be a string"):
+        normalize_items([
+            {
+                "title": "Valid",
+                "source": "Nowhere",
+                "url": "https://example.com/non-string-category",
+                "summary": "Summary",
+                "published_at": "2026-01-01T00:00:00Z",
+                "category": 42,
             }
         ])
 

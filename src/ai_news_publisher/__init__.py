@@ -1,6 +1,3 @@
-"""AI News Publisher package."""
+from ai_news_publisher.pipeline import generate_markdown_digest, normalize_items
 
-from .models import NewsItem
-from .pipeline import generate_markdown_digest, normalize_items
-
-__all__ = ["NewsItem", "normalize_items", "generate_markdown_digest"]
+__all__ = ["normalize_items", "generate_markdown_digest"]
